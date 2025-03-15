@@ -56,7 +56,7 @@ println("Forecasts: ", forecasts)
 Julia
 ![Execution Time Comparison](pics/execution_time_comparison1.png)  
 Python
-![Execution Time Comparison](pics/execution_time_comparison2.png)
+![Execution Time Comparison](pics/execution_time_comparison2.png)  
 used python library `timeit` for speed performance analysis.  
 2. Forecast Accuracy Comparison - <5% in average difference for 10 day forecasts.
 These results were tests over multiple datasets and hyperparameters.
