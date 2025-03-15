@@ -8,8 +8,7 @@ This repository provides an **efficient Julia implementation** of the ARIMA (Aut
 
 - **Multithreading**: The implementation uses Julia's native multithreading capabilities to parallelize computationally intensive tasks, such as residual calculation and forecasting.
 - **L-BFGS Optimizer**: The L-BFGS algorithm is used for efficient optimization of the ARIMA model parameters.
-- **High Performance**: Benchmarks show that this implementation runs in **50% of the time** compared to the Python `statsforecast` library, with **<5% difference** in results across multiple datasets and parameter configurations.
-- **Easy to Use**: The API is simple and intuitive, making it easy to integrate into your workflow.
+- **Module**: Module based implementation allows for precompilation driving faster speeds also using vectorisation to speed up.
 
 ---
 
@@ -57,7 +56,8 @@ println("Forecasts: ", forecasts)
 Julia
 ![Execution Time Comparison](pics/execution_time_comparison1.png)  
 Python
-![Execution Time Comparison](pics/execution_time_comparison2.png)  
+![Execution Time Comparison](pics/execution_time_comparison2.png)
+used python library `timeit` for speed performance analysis.  
 2. Forecast Accuracy Comparison - <5% in average difference for 10 day forecasts.
 These results were tests over multiple datasets and hyperparameters.
 
