@@ -60,7 +60,7 @@ CustomARIMA.plot_series(Y_df, Y_hat_df)
 ```
 
 ## Visualization Example
-![Forecasting Visualization](path_to_your_image.png)
+![Forecasting Visualization](plot.png)
 
 ## Performance Benchmarks
 
