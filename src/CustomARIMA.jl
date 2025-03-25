@@ -1,8 +1,7 @@
 module CustomARIMA
-
+using Plots, DataFrames, Dates
 using Optim, LinearAlgebra, Statistics
-
-export ARIMAModel, arima, forecast
+export ARIMAModel, arima, forecast, plot_series
 
 struct ARIMAModel
     p::Int
@@ -69,6 +68,31 @@ function arima(y::AbstractVector{<:Real}, p::Int, d::Int, q::Int; maxiter=1000)
     end
     ARIMAModel(p, d, q, ar, ma, sigma2, final_residuals, y_orig)
 end
+
+
+function plot_series(Y_df::DataFrame, Y_hat_df::DataFrame)
+    Y_df.ds = Date.(Y_df.ds)
+    Y_hat_df.ds = Date.(Y_hat_df.ds)
+
+    actual_colors = [:blue, :green, :red, :purple, :orange, :cyan, :magenta, :black, :pink]
+    forecast_colors = [:dodgerblue, :limegreen, :firebrick, :indigo, :darkorange, :teal, :deeppink, :gray, :lightcoral]
+
+    plt = plot(title="Time Series Forecasting", xlabel="Date", ylabel="Value", legend=:topleft, xtickfont=8, xrotation=45)
+
+    for (i, col) in enumerate(names(Y_df)[2:end])
+        color = actual_colors[mod1(i, length(actual_colors))]
+        plot!(plt, Y_df.ds, Y_df[!, col], label="Actual - $col", color=color, linewidth=2)
+    end
+
+    for (i, col) in enumerate(names(Y_hat_df)[2:end])
+        color = forecast_colors[mod1(i, length(forecast_colors))]
+        plot!(plt, Y_hat_df.ds, Y_hat_df[!, col], label="Forecast - $col", color=color, linewidth=2)
+    end
+
+    display(plt)
+end
+
+
 function forecast(model::ARIMAModel, steps::Int)
     y_diff = model.residuals
     p, q = model.p, model.q
