@@ -1,8 +1,8 @@
 # MyPackage.jl
 
-Welcome to the documentation for `MyPackage.jl`!
+Welcome to the documentation for `CustomARIMA.jl`!
 
 ## Installation
 ```julia
 using Pkg
-Pkg.add("MyPackage")
+Pkg.add("CustomARIMA")
