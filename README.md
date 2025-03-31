@@ -61,7 +61,22 @@ CustomARIMA.plot_series(Y_df, Y_hat_df)
 
 ## Visualization Example
 ![Forecasting Visualization](plot.png)
+### Diebold Mariano Test
+To compare two forecasts to check if one is significantly more accurate than the other
+```julia
+forecasts1 = [471.92, 491.08, 492.22, 483.94, 474.30, 467.87, 465.62, 466.35, 
+              468.27, 470.01, 470.96, 471.14]
 
+forecasts2 = [490.12, 474.28, 469.42, 471.86, 443.67, 433.51, 456.16, 439.73, 
+              443.19, 465.33, 449.01, 445.06]
+DM_stat, p_value = diebold_mariano_test(y_actual, forecasts1, forecasts2,h=12)
+println("DM Statistic: $DM_stat")
+println("P-value: $p_value")
+```
+```
+DM Statistic: -0.9459405925081683
+P-value: 0.3441788559856751
+```
 ## Performance Benchmarks
 
 - **Execution Time Comparison** - Time reduced by at least 50% relative to the 'Statsforecast' library.
