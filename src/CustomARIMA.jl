@@ -1,7 +1,7 @@
 module CustomARIMA
 using Plots, DataFrames, Dates
 using Optim, LinearAlgebra, Statistics
-export ARIMAModel, arima, forecast, plot_series
+export ARIMAModel, arima, forecast, plot_series,forecast_rolling,diebold_mariano_test
 
 struct ARIMAModel
     p::Int
@@ -91,7 +91,32 @@ function plot_series(Y_df::DataFrame, Y_hat_df::DataFrame)
 
     display(plt)
 end
+function normal_cdf(x::T) where T<:AbstractFloat
+    t = one(T) / (one(T) + T(0.2316419) * abs(x))
+    b = T[0.319381530, -0.356563782, 1.781477937, -1.821255978, 1.330274429]
+    poly = t * (b[1] + t * (b[2] + t * (b[3] + t * (b[4] + t * b[5]))))
+    cdf = one(T) - (inv(sqrt(T(2π))) * exp(-T(0.5) * x^2) * poly)
+    return x < zero(T) ? one(T) - cdf : cdf
+end
 
+function diebold_mariano_test(actual::Vector{T}, forecast1::Vector{T}, forecast2::Vector{T}; h::Int=1) where T<:Number
+    T_size = length(actual)
+    @assert T_size == length(forecast1) == length(forecast2) "All vectors must be the same length"
+    e1 = actual .- forecast1
+    e2 = actual .- forecast2
+    d_t = e1 .^ 2 .- e2 .^ 2
+    mean_d = sum(d_t) / T_size
+    var_d = sum((d_t .- mean_d) .^ 2) / (T_size - 1)
+    gamma_h = zero(T)
+    for h in 1:min(h, T_size - 1)
+        sum_h = sum((d_t[t] - mean_d) * (d_t[t-h] - mean_d) for t in h+1:T_size)
+        gamma_h += 2 * (one(T) - T(h) / (h+1)) * (sum_h / T_size)
+    end
+    S_d = var_d + gamma_h
+    DM_stat = mean_d / sqrt(S_d / T_size)
+    p_value = 2 * (one(T) - normal_cdf(abs(DM_stat)))
+    return DM_stat, p_value
+end
 
 function forecast(model::ARIMAModel, steps::Int)
     y_diff = model.residuals
@@ -118,4 +143,34 @@ function forecast(model::ARIMAModel, steps::Int)
     end 
     forecasts
 end
+function forecast_rolling(model::ARIMAModel, steps::Int, window_size::Int)
+    y_diff = model.residuals
+    p, q = model.p, model.q
+    ar = model.ar_coef
+    ma = model.ma_coef
+    forecasts = zeros(steps)
+    hist_diff = copy(y_diff[max(1, end - window_size + 1):end])
+    hist_resid = copy(model.residuals[max(1, end - window_size + 1):end])
+
+    for i in 1:steps
+        ar_term = sum(ar[j] * hist_diff[end-j+1] for j in 1:p if j <= length(hist_diff))
+        ma_term = sum(ma[j] * hist_resid[end-j+1] for j in 1:q if j <= length(hist_resid))
+        new_val = ar_term + ma_term
+        if length(hist_diff) >= window_size
+            popfirst!(hist_diff) 
+        end
+        if length(hist_resid) >= window_size
+            popfirst!(hist_resid) 
+        end
+        push!(hist_diff, new_val)
+        push!(hist_resid, 0.0)
+
+        forecasts[i] = new_val
+    end
+    for _ in 1:model.d
+        forecasts = cumsum(vcat(model.y_orig[end], forecasts))[2:end]
+    end 
+    forecasts
+end
+
 end
